@@ -324,22 +324,31 @@ class ExcimerClient {
 			CURLOPT_USERAGENT => 'ExcimerUI',
 			CURLOPT_TIMEOUT_MS => $this->config['timeout'] * 1000,
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_FAILONERROR => true
 		] );
 		$result = curl_exec( $ch );
 		$t += microtime( true );
 
-		if ( $result === false
-			&& $this->config['errorCallback']
-		) {
-			( $this->config['errorCallback'] )( 'ExcimerUI server error: ' . curl_error( $ch ) );
+		$code = curl_getinfo( $ch, CURLINFO_RESPONSE_CODE );
+		if ( $this->config['errorCallback'] ) {
+			if ( $result === false ) {
+				$msg = 'ExcimerUI server error: ' . curl_error( $ch );
+			} elseif ( $code >= 400 ) {
+				$msg = "ExcimerUI server error $code";
+				if ( preg_match( '~<h1>Excimer UI Error [0-9]+</h1>\n<p>\n(.*)\n</p>~',
+					$result, $m )
+				) {
+					$msg .= ": {$m[1]}";
+				}
+			} else {
+				$msg = null;
+			}
+			if ( $msg !== null ) {
+				( $this->config['errorCallback'] )( $msg );
+			}
 		}
-
 		if ( $this->config['debugCallback'] ) {
 			( $this->config['debugCallback'] )(
-				'Server returned response code ' .
-				curl_getinfo( $ch, CURLINFO_RESPONSE_CODE ) .
-				'. Total request time: ' .
+				"Server returned response code $code. Total request time: " .
 				round( $t * 1000, 6 ) . ' ms.'
 			);
 		}
