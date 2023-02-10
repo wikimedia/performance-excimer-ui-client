@@ -11,6 +11,8 @@ class ExcimerClient {
 		'activate' => 'always',
 		'period' => 0.001,
 		'timeout' => 1,
+		'hashKey' => null,
+		'profileIdLength' => 16,
 		'debugCallback' => null,
 		'errorCallback' => null,
 	];
@@ -30,6 +32,9 @@ class ExcimerClient {
 	/** @var string|null */
 	private $id;
 
+	/** @var string|null */
+	private $profileId;
+
 	/**
 	 * Initialise the profiler. This should be called as early as possible.
 	 *
@@ -47,6 +52,10 @@ class ExcimerClient {
 	 *       parameter is passed
 	 *   - period: The sampling period in seconds (default 0.001)
 	 *   - timeout: The request timeout for ingestion requests
+	 *   - hashKey: A secret key to be included in the hash, when mapping
+	 *     request IDs to profile IDs. Defaults to no key.
+	 *   - profileIdLength: The number of hexadecimal characters in a generated
+	 *     profile ID. Default 16.
 	 *   - debugCallback: A function to call back with debug messages. It takes
 	 *     a single parameter which is the message string.
 	 *   - errorCallback: A function to call back with error messages. It takes
@@ -158,7 +167,7 @@ class ExcimerClient {
 			throw new \RuntimeException( "No ingestion URL configured" );
 		}
 		$url = rtrim( $url, '/' );
-		return "$url/profile/" . rawurlencode( $this->getId() );
+		return "$url/profile/" . rawurlencode( $this->getProfileId() );
 	}
 
 	/**
@@ -208,10 +217,11 @@ class ExcimerClient {
 	 */
 	public function setId( string $id ) {
 		$this->id = $id;
+		$this->profileId = null;
 	}
 
 	/**
-	 * Get the ID, or generate a random ID.
+	 * Get the request ID, or generate a random ID.
 	 *
 	 * @return string
 	 */
@@ -225,6 +235,23 @@ class ExcimerClient {
 			);
 		}
 		return $this->id;
+	}
+
+	/**
+	 * Get the profile ID derived from the request ID
+	 *
+	 * @return string
+	 */
+	private function getProfileId() {
+		if ( $this->profileId === null ) {
+			if ( $this->config['hashKey'] !== null ) {
+				$hash = hash_hmac( 'sha512', $this->getId(), $this->config['hashKey'] );
+			} else {
+				$hash = hash( 'sha512', $this->getId() );
+			}
+			$this->profileId = substr( $hash, 0, $this->config['profileIdLength'] );
+		}
+		return $this->profileId;
 	}
 
 	/**
@@ -281,6 +308,7 @@ class ExcimerClient {
 		$data = [
 			'name' => $name,
 			'request' => $this->encode( $this->getRequestInfo() ),
+			'requestId' => $this->getId(),
 			'period' => $this->config['period'],
 			'speedscope_deflated' => gzdeflate(
 				json_encode(
@@ -290,7 +318,7 @@ class ExcimerClient {
 			),
 		];
 		$t = -microtime( true );
-		$ch = curl_init( $this->getIngestionUrl( $this->getId() ) );
+		$ch = curl_init( $this->getIngestionUrl( $this->getProfileId() ) );
 		curl_setopt_array( $ch, [
 			CURLOPT_POSTFIELDS => $data,
 			CURLOPT_USERAGENT => 'ExcimerUI',
