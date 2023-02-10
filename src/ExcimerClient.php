@@ -4,7 +4,7 @@ namespace Wikimedia\ExcimerUI\Client;
 
 use ExcimerProfiler;
 
-class Profiler {
+class ExcimerClient {
 	private const DEFAULT_CONFIG = [
 		'url' => null,
 		'ingestionUrl' => null,
@@ -15,7 +15,7 @@ class Profiler {
 		'errorCallback' => null,
 	];
 
-	/** @var Profiler */
+	/** @var ExcimerClient */
 	private static $instance;
 
 	/** @var bool */
