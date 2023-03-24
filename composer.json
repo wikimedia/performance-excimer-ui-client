@@ -1,6 +1,14 @@
 {
 	"name": "wikimedia/excimer-ui-client",
 	"description": "Excimer UI profile collector and client",
+	"license": "Apache-2.0",
+	"homepage": "https://gerrit.wikimedia.org/g/performance/excimer-ui-client",
+	"authors": [
+		{
+			"name": "Tim Starling",
+			"email": "tstarling@wikimedia.org"
+		}
+	],
 	"require": {
 		"php": ">=7.4",
 		"ext-excimer": "*",
