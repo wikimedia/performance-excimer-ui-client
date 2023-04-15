@@ -51,7 +51,7 @@ class ExcimerClient {
 	 *     - "query" to activate when the excimer_profile query string
 	 *       parameter is passed
 	 *   - period: The sampling period in seconds (default 0.001)
-	 *   - timeout: The request timeout for ingestion requests
+	 *   - timeout: The request timeout for ingestion requests, in seconds.
 	 *   - hashKey: A secret key to be included in the hash, when mapping
 	 *     request IDs to profile IDs. Defaults to no key.
 	 *   - profileIdLength: The number of hexadecimal characters in a generated
