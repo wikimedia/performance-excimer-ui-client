@@ -1,5 +1,7 @@
+/coverage/
 /vendor/
 /.idea
+/.phpunit.result.cache
 /composer.lock
 *.kate-swp
 *~

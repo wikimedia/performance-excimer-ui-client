@@ -7,4 +7,6 @@
 	<rule ref="MediaWiki.Usage.SuperGlobalsUsage.SuperGlobals">
 		<severity>0</severity>
 	</rule>
+	<exclude-pattern>.phan/</exclude-pattern>
+	<exclude-pattern>tests/stubs/</exclude-pattern>
 </ruleset>

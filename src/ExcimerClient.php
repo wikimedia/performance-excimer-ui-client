@@ -17,7 +17,7 @@ class ExcimerClient {
 		'errorCallback' => null,
 	];
 
-	/** @var ExcimerClient */
+	/** @var ExcimerClient|null */
 	private static $instance;
 
 	/** @var bool */
@@ -98,11 +98,10 @@ class ExcimerClient {
 	}
 
 	/**
-	 * Private constructor
-	 *
+	 * @internal
 	 * @param array $config
 	 */
-	private function __construct( $config ) {
+	public function __construct( $config ) {
 		$this->config = $config + self::DEFAULT_CONFIG;
 	}
 
@@ -291,6 +290,29 @@ class ExcimerClient {
 	}
 
 	/**
+	 * @param string $url
+	 * @param array $data
+	 * @return array{result:false|string,code:int,error:null|string}
+	 */
+	protected function httpRequest( string $url, array $data ) {
+		$ch = curl_init( $url );
+		curl_setopt_array( $ch, [
+			CURLOPT_POSTFIELDS => $data,
+			CURLOPT_USERAGENT => 'ExcimerUI',
+			CURLOPT_TIMEOUT_MS => (int)( $this->config['timeout'] * 1000 ),
+			CURLOPT_RETURNTRANSFER => true,
+		] );
+		$result = curl_exec( $ch );
+		$error = $result === false ? curl_error( $ch ) : null;
+		$code = curl_getinfo( $ch, CURLINFO_RESPONSE_CODE );
+		return [
+			'result' => $result,
+			'code' => $code,
+			'error' => $error,
+		];
+	}
+
+	/**
 	 * Send the profile result to the server
 	 */
 	private function sendReport() {
@@ -307,24 +329,19 @@ class ExcimerClient {
 			'speedscope_deflated' => gzdeflate( $this->jsonEncode( $speedscope ) ),
 		];
 		$t = -microtime( true );
-		$ch = curl_init( $this->getIngestionUrl( $this->getProfileId() ) );
-		curl_setopt_array( $ch, [
-			CURLOPT_POSTFIELDS => $data,
-			CURLOPT_USERAGENT => 'ExcimerUI',
-			CURLOPT_TIMEOUT_MS => (int)( $this->config['timeout'] * 1000 ),
-			CURLOPT_RETURNTRANSFER => true,
-		] );
-		$result = curl_exec( $ch );
+		$resp = $this->httpRequest(
+			$this->getIngestionUrl( $this->getProfileId() ),
+			$data
+		);
 		$t += microtime( true );
 
-		$code = curl_getinfo( $ch, CURLINFO_RESPONSE_CODE );
 		if ( $this->config['errorCallback'] ) {
-			if ( $result === false ) {
-				$msg = 'ExcimerUI server error: ' . curl_error( $ch );
-			} elseif ( $code >= 400 ) {
-				$msg = "ExcimerUI server error $code";
+			if ( $resp['result'] === false ) {
+				$msg = 'ExcimerUI server error: ' . $resp['error'];
+			} elseif ( $resp['code'] >= 400 ) {
+				$msg = "ExcimerUI server error {$resp['code']}";
 				if ( preg_match( '~<h1>Excimer UI Error [0-9]+</h1>\n<p>\n(.*)\n</p>~',
-					$result, $m )
+					$resp['result'], $m )
 				) {
 					$msg .= ": {$m[1]}";
 				}
@@ -337,9 +354,19 @@ class ExcimerClient {
 		}
 		if ( $this->config['debugCallback'] ) {
 			( $this->config['debugCallback'] )(
-				"Server returned response code $code. Total request time: " .
+				"Server returned response code {$resp['code']}. Total request time: " .
 				round( $t * 1000, 6 ) . ' ms.'
 			);
+		}
+	}
+
+	/**
+	 * @internal
+	 */
+	public static function resetForTest(): void {
+		if ( self::$instance ) {
+			self::$instance->excimer = null;
+			self::$instance = null;
 		}
 	}
 }
