@@ -52,6 +52,8 @@ class ExcimerClient {
 	 *       parameter is passed
 	 *   - period: The sampling period in seconds (default 0.001)
 	 *   - timeout: The request timeout for ingestion requests, in seconds.
+	 *     Use zero to enforce no timeout (default 0).
+	 *     Values smaller than 0.001 (1ms) are not supported.
 	 *   - hashKey: A secret key to be included in the hash, when mapping
 	 *     request IDs to profile IDs. Defaults to no key.
 	 *   - profileIdLength: The number of hexadecimal characters in a generated
@@ -317,7 +319,7 @@ class ExcimerClient {
 		curl_setopt_array( $ch, [
 			CURLOPT_POSTFIELDS => $data,
 			CURLOPT_USERAGENT => 'ExcimerUI',
-			CURLOPT_TIMEOUT_MS => $this->config['timeout'] * 1000,
+			CURLOPT_TIMEOUT_MS => (int)( $this->config['timeout'] * 1000 ),
 			CURLOPT_RETURNTRANSFER => true,
 		] );
 		$result = curl_exec( $ch );
