@@ -261,7 +261,7 @@ class ExcimerClient {
 	 * @return string
 	 * @throws \JsonException
 	 */
-	private function encode( $data ) {
+	private function jsonEncode( $data ) {
 		return json_encode(
 			$data,
 			JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
@@ -307,15 +307,10 @@ class ExcimerClient {
 		$speedscope['profiles'][0]['name'] = $name;
 		$data = [
 			'name' => $name,
-			'request' => $this->encode( $this->getRequestInfo() ),
+			'request' => $this->jsonEncode( $this->getRequestInfo() ),
 			'requestId' => $this->getId(),
 			'period' => $this->config['period'],
-			'speedscope_deflated' => gzdeflate(
-				json_encode(
-					$speedscope,
-					JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-				)
-			),
+			'speedscope_deflated' => gzdeflate( $this->jsonEncode( $speedscope ) ),
 		];
 		$t = -microtime( true );
 		$ch = curl_init( $this->getIngestionUrl( $this->getProfileId() ) );
