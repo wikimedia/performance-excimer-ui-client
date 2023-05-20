@@ -294,7 +294,10 @@ class ExcimerClient {
 	private function getRequestInfo() {
 		$info = [];
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			$info['url'] = $_SERVER['REQUEST_URI'];
+			$scheme = ( @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' )
+				? 'https://'
+				: 'http://';
+			$info['url'] = $scheme . ( $_SERVER['HTTP_HOST'] ?? 'unknown' ) . $_SERVER['REQUEST_URI'];
 		}
 		return $info;
 	}
