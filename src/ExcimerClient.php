@@ -271,21 +271,6 @@ class ExcimerClient {
 	}
 
 	/**
-	 * Get the profile name from the request data.
-	 *
-	 * @return mixed|string
-	 */
-	private function getRequestName() {
-		if ( PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg' ) {
-			return implode( ' ', $GLOBALS['argv'] );
-		} elseif ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			return $_SERVER['REQUEST_URI'];
-		} else {
-			return '';
-		}
-	}
-
-	/**
 	 * Get an array of JSON-serializable request information to be attached to
 	 * the profile.
 	 *
@@ -293,6 +278,9 @@ class ExcimerClient {
 	 */
 	private function getRequestInfo() {
 		$info = [];
+		if ( PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg' ) {
+			$info['argv'] = implode( ' ', $GLOBALS['argv'] );
+		}
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
 			$scheme = ( @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https' )
 				? 'https://'
@@ -308,11 +296,12 @@ class ExcimerClient {
 	private function sendReport() {
 		$log = $this->excimer->getLog();
 		$speedscope = $log->getSpeedscopeData();
-		$name = $this->getRequestName();
+		$info = $this->getRequestInfo();
+		$name = $info['argv'] ?? $info['url'] ?? '';
 		$speedscope['profiles'][0]['name'] = $name;
 		$data = [
 			'name' => $name,
-			'request' => $this->jsonEncode( $this->getRequestInfo() ),
+			'request' => $this->jsonEncode( $info ),
 			'requestId' => $this->getId(),
 			'period' => $this->config['period'],
 			'speedscope_deflated' => gzdeflate( $this->jsonEncode( $speedscope ) ),
