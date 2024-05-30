@@ -31,6 +31,9 @@
 		}
 	},
 	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
 		"platform": {
 			"ext-excimer": "1.1.1"
 		}
@@ -50,10 +53,5 @@
 			"phpcbf ."
 		],
 		"phpcs": "phpcs -sp ."
-	},
-	"config": {
-		"allow-plugins": {
-			"dealerdirect/phpcodesniffer-composer-installer": true
-		}
 	}
 }
