@@ -3,6 +3,10 @@
 namespace Wikimedia\ExcimerUI\Client;
 
 use ExcimerProfiler;
+use InvalidArgumentException;
+use JsonException;
+use LogicException;
+use RuntimeException;
 
 class ExcimerClient {
 	private const DEFAULT_CONFIG = [
@@ -68,7 +72,7 @@ class ExcimerClient {
 	 */
 	public static function setup( $config ) {
 		if ( self::$instance ) {
-			throw new \LogicException( 'setup() can only be called once' );
+			throw new LogicException( 'setup() can only be called once' );
 		}
 		self::$instance = new self( $config );
 		self::$instance->maybeActivate();
@@ -82,7 +86,7 @@ class ExcimerClient {
 	 */
 	public static function singleton(): self {
 		if ( !self::$instance ) {
-			throw new \LogicException( 'setup() must be called before singleton()' );
+			throw new LogicException( 'setup() must be called before singleton()' );
 		}
 		return self::$instance;
 	}
@@ -135,7 +139,7 @@ class ExcimerClient {
 
 	/**
 	 * Make a link to the profile for the current request, and any other
-	 * requests which had the same ID set with setId().
+	 * requests, which had the same ID set with setId().
 	 *
 	 * @param array $options
 	 *   - text: The link text
@@ -165,7 +169,7 @@ class ExcimerClient {
 	public function getUrl() {
 		$url = $this->config['url'] ?? null;
 		if ( $url === null ) {
-			throw new \RuntimeException( "No ingestion URL configured" );
+			throw new RuntimeException( "No ingestion URL configured" );
 		}
 		$url = rtrim( $url, '/' );
 		return "$url/profile/" . rawurlencode( $this->getProfileId() );
@@ -190,7 +194,7 @@ class ExcimerClient {
 				}
 				break;
 			default:
-				throw new \InvalidArgumentException( 'Unknown activation type' );
+				throw new InvalidArgumentException( 'Unknown activation type' );
 		}
 	}
 
@@ -203,7 +207,7 @@ class ExcimerClient {
 	private function getIngestionUrl( $id ) {
 		$url = $this->config['ingestionUrl'] ?? $this->config['url'] ?? null;
 		if ( $url === null ) {
-			throw new \RuntimeException( "No ingestion URL configured" );
+			throw new RuntimeException( "No ingestion URL configured" );
 		}
 		return rtrim( $url, '/' ) . '/ingest/' . rawurlencode( $id );
 	}
@@ -214,7 +218,6 @@ class ExcimerClient {
 	 * in the UI.
 	 *
 	 * @param string $id
-	 * @return void
 	 */
 	public function setId( string $id ) {
 		$this->id = $id;
@@ -260,7 +263,7 @@ class ExcimerClient {
 	 *
 	 * @param array $data
 	 * @return string
-	 * @throws \JsonException
+	 * @throws JsonException
 	 */
 	private function jsonEncode( $data ) {
 		return json_encode(

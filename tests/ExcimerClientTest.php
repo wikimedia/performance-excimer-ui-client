@@ -1,4 +1,6 @@
 <?php
+
+use PHPUnit\Framework\TestCase;
 use Wikimedia\ExcimerUI\Client\ExcimerClient;
 use Wikimedia\TestingAccessWrapper;
 
@@ -7,9 +9,9 @@ if ( !class_exists( ExcimerProfiler::class ) ) {
 }
 
 /**
- * @covers Wikimedia\ExcimerUI\Client\ExcimerClient
+ * @covers \Wikimedia\ExcimerUI\Client\ExcimerClient
  */
-class ExcimerClientTest extends PHPUnit\Framework\TestCase {
+class ExcimerClientTest extends TestCase {
 
 	protected function tearDown(): void {
 		ExcimerClient::resetForTest();
@@ -100,7 +102,7 @@ class ExcimerClientTest extends PHPUnit\Framework\TestCase {
 			'Server returned response code 202. Total request time:',
 			$debug
 		);
-		$this->assertSame( null, $error );
+		$this->assertNull( $error );
 	}
 
 	public function testSendError() {
