@@ -177,7 +177,7 @@ class ExcimerClient {
 	private function maybeActivate() {
 		switch ( $this->config['activate'] ) {
 			case 'always':
-				self::activate();
+				$this->activate();
 				break;
 			case 'manual':
 				break;
@@ -186,7 +186,7 @@ class ExcimerClient {
 					$this->setId( $_GET['excimer_id'] );
 				}
 				if ( isset( $_GET['excimer_profile'] ) ) {
-					self::activate();
+					$this->activate();
 				}
 				break;
 			default:
