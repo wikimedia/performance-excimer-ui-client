@@ -8,5 +8,7 @@
 		<severity>0</severity>
 	</rule>
 	<exclude-pattern>.phan/</exclude-pattern>
-	<exclude-pattern>tests/stubs/</exclude-pattern>
+	<file>.</file>
+	<arg name="extensions" value="php" />
+	<arg name="encoding" value="UTF-8" />
 </ruleset>
