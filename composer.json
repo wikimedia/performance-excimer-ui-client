@@ -50,7 +50,8 @@
 		"phan": "phan --allow-polyfill-parser",
 		"fix": [
 			"minus-x fix .",
-			"phpcbf ."
+			"phpcbf .",
+			"phpcbf"
 		],
 		"phpcs": "phpcs -sp ."
 	}
