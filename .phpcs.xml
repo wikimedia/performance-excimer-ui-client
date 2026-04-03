@@ -7,6 +7,7 @@
 	<rule ref="MediaWiki.Usage.SuperGlobalsUsage.SuperGlobals">
 		<severity>0</severity>
 	</rule>
+	<rule ref="Generic.PHP.RequireStrictTypes" />
 	<exclude-pattern>.phan/</exclude-pattern>
 	<file>.</file>
 	<arg name="extensions" value="php" />
